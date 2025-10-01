@@ -405,7 +405,7 @@ class NumberRangeSummarizerTest {
             summarizer.collect(largeInput.toString());
         });
         
-        assertTrue(exception.getMessage().contains("Input too large"));
+        assertTrue(exception.getMessage().contains("Input size exceeds limit"));
     }
     
     @Test

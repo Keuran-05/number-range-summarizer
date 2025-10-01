@@ -3,23 +3,27 @@ package com.numberrange;
 import java.util.*;
 
 /**
- * High-performance implementation of NumberRangeSummarizer optimized for production use.
+ * Production-ready implementation of NumberRangeSummarizer with consistent algorithms.
  * 
- * Features performance optimizations including:
- * - Single-pass sorting with efficient deduplication
- * - Smart detection of pre-sorted input to avoid unnecessary re-processing  
- * - Memory-efficient algorithms suitable for large datasets
- * - Input validation to prevent resource exhaustion
+ * Design principles:
+ * - Consistent ArrayList+sort approach for predictable performance
+ * - Simple, maintainable code over premature optimization
+ * - Proper input validation and error handling
+ * - Optional debug logging for production troubleshooting
  * 
- * Time Complexity: O(n log n) for sorting, O(n) for range building
- * Space Complexity: O(n) with minimal overhead
+ * Performance characteristics:
+ * - Time Complexity: O(n log n) for sorting, O(n) for range building
+ * - Space Complexity: O(n) with efficient memory usage
+ * - Handles up to 100,000 character inputs safely
  * 
  * @author Keuran Kisten
+ * @version 3.0.0
  */
 public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
     
-    // Production constraint for input validation
+    // Production constraints - configurable in real environment
     private static final int MAX_INPUT_LENGTH = 100_000;
+    private static final boolean DEBUG_ENABLED = Boolean.getBoolean("numberrange.debug");
 
     /**
      * Parses a comma-separated string of integers into a sorted, unique collection.
@@ -53,7 +57,14 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
         }
         
         // Sort once and remove duplicates efficiently
-        return deduplicateAndSort(numberList);
+        List<Integer> result = deduplicateAndSort(numberList);
+        
+        if (DEBUG_ENABLED) {
+            System.out.printf("[DEBUG] Processed %d parts, found %d valid numbers, result size: %d%n", 
+                            parts.length, numberList.size(), result.size());
+        }
+        
+        return result;
     }
 
     /**
@@ -68,11 +79,8 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
             return "";
         }
 
-        // Optimize: if input is already from our collect() method, it's sorted and unique
-        List<Integer> numbers = (input instanceof ArrayList && isSortedAndUnique(input)) 
-            ? new ArrayList<>(input) 
-            : prepareNumbers(input);
-            
+        // Trust the interface: prepare numbers consistently
+        List<Integer> numbers = prepareNumbers(input);
         if (numbers.isEmpty()) {
             return "";
         }
@@ -102,17 +110,18 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
     
     /**
      * Gets a clean, sorted list of unique numbers from any collection.
+     * Uses consistent ArrayList+sort approach for optimal performance.
      */
     private List<Integer> prepareNumbers(Collection<Integer> input) {
-        Set<Integer> uniqueNumbers = new TreeSet<>();
+        List<Integer> numbers = new ArrayList<>();
         
         for (Integer number : input) {
             if (number != null) {
-                uniqueNumbers.add(number);
+                numbers.add(number);
             }
         }
         
-        return new ArrayList<>(uniqueNumbers);
+        return deduplicateAndSort(numbers);
     }
     
     /**
@@ -155,9 +164,11 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
      */
     private void validateInputSize(String input) {
         if (input != null && input.length() > MAX_INPUT_LENGTH) {
-            throw new IllegalArgumentException(
-                String.format("Input too large: %d characters (max: %d)", 
-                            input.length(), MAX_INPUT_LENGTH));
+            String message = String.format(
+                "Input size exceeds limit: %d characters (maximum allowed: %d). " +
+                "Consider breaking large inputs into smaller chunks.",
+                input.length(), MAX_INPUT_LENGTH);
+            throw new IllegalArgumentException(message);
         }
     }
     
@@ -189,22 +200,4 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
         return result;
     }
     
-    /**
-     * Efficiently checks if collection is already sorted and contains unique elements.
-     * Avoids unnecessary re-processing of data from our collect() method.
-     * 
-     * @param input collection to check
-     * @return true if sorted and unique, false otherwise
-     */
-    private boolean isSortedAndUnique(Collection<Integer> input) {
-        if (input.size() <= 1) return true;
-        
-        Integer previous = null;
-        for (Integer current : input) {
-            if (current == null) return false;
-            if (previous != null && current <= previous) return false;
-            previous = current;
-        }
-        return true;
-    }
 }
