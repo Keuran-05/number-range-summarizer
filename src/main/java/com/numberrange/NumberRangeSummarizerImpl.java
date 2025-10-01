@@ -3,16 +3,31 @@ package com.numberrange;
 import java.util.*;
 
 /**
- * Takes comma-separated numbers and turns them into clean ranges.
- * Example: "1,3,6,7,8" becomes "1, 3, 6-8"
+ * Production-ready implementation of NumberRangeSummarizer for enterprise use.
+ * 
+ * Converts comma-separated integers into compact range representations with
+ * robust error handling and performance optimizations.
  * 
  * @author Keuran Kisten
+ * @version 1.0.0
  */
 public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
+    
+    // Production constraints
+    private static final int MAX_INPUT_LENGTH = 100_000;
+    private static final int MAX_NUMBERS = 10_000;
 
+    /**
+     * Parses a comma-separated string of integers into a sorted, unique collection.
+     * 
+     * @param input comma-separated string of integers (e.g., "1,3,6,7,8")
+     * @return sorted collection of unique integers; empty collection if input is null/empty
+     * @throws IllegalArgumentException if input exceeds maximum allowed size
+     */
     @Override
     public Collection<Integer> collect(String input) {
-        // Nothing to work with? Return empty list
+        validateInputSize(input);
+        
         if (input == null || input.trim().isEmpty()) {
             return new ArrayList<>();
         }
@@ -34,9 +49,14 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
         return new ArrayList<>(numbers);
     }
 
+    /**
+     * Converts a collection of integers into a compact range representation.
+     * 
+     * @param input collection of integers to summarize
+     * @return formatted string with ranges (e.g., "1, 3, 6-8, 12-15"); empty string if input is null/empty
+     */
     @Override
     public String summarizeCollection(Collection<Integer> input) {
-        // Handle empty cases upfront
         if (input == null || input.isEmpty()) {
             return "";
         }
@@ -104,14 +124,30 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
     }
     
     /**
-     * Tries to parse a string as an integer. Returns null if it fails.
-     * Just skips invalid input.
+     * Safely parses a string to Integer with error handling.
+     * 
+     * @param text string to parse
+     * @return parsed Integer or null if invalid
      */
     private Integer tryParseInt(String text) {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            return null; // Just ignore invalid numbers
+            return null;
+        }
+    }
+    
+    /**
+     * Validates input size to prevent performance issues and DoS attacks.
+     * 
+     * @param input input string to validate
+     * @throws IllegalArgumentException if input exceeds limits
+     */
+    private void validateInputSize(String input) {
+        if (input != null && input.length() > MAX_INPUT_LENGTH) {
+            throw new IllegalArgumentException(
+                String.format("Input too large: %d characters (max: %d)", 
+                            input.length(), MAX_INPUT_LENGTH));
         }
     }
 }

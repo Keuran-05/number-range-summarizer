@@ -1,23 +1,20 @@
 # Number Range Summarizer
 
-![Build Status](https://github.com/Keuran-05/number-range-summarizer/workflows/Build%20and%20Test/badge.svg)
-![Java Version](https://img.shields.io/badge/Java-8%2B-blue)
-![Maven](https://img.shields.io/badge/Maven-3.6%2B-red)
+A production-ready Java utility that converts comma-separated numbers into compact range format for business applications.
 
-A robust Java utility that transforms collections of numbers into compact, human-readable range representations with comprehensive error handling and edge case support.
+## Business Problem
 
-## 🎯 Overview
+Converts comma-separated number lists into readable range format, commonly needed for:
+- Inventory management ("Items 1-5, 8, 12-15 are out of stock")
+- Report pagination ("Pages 1-3, 7, 10-12 contain errors")
+- Data processing pipelines requiring compact number representation
 
-This project provides a professional implementation of a number range summarizer that parses comma-separated integers and intelligently groups consecutive numbers into ranges.
+## Key Features
 
-### Key Features
-
-✅ **Robust Input Parsing** - Handles invalid numbers, whitespace, and malformed input gracefully  
-✅ **Smart Range Detection** - Automatically groups consecutive numbers into ranges  
-✅ **Edge Case Handling** - Supports negative numbers, duplicates, and boundary conditions  
-✅ **High Performance** - O(n log n) time complexity with efficient algorithms  
-✅ **Comprehensive Testing** - 45+ test cases covering all scenarios  
-✅ **CI/CD Pipeline** - Automated testing and code coverage reporting  
+- **Fast Processing** - O(n log n) performance suitable for production use
+- **Input Validation** - Protects against oversized inputs and malformed data
+- **Error Handling** - Gracefully handles invalid numbers without crashing
+- **Production Ready** - Includes proper JavaDoc and enterprise-grade validation
 
 ### Example Usage
 

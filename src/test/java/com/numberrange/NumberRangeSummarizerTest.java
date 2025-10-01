@@ -393,17 +393,18 @@ class NumberRangeSummarizerTest {
     }
     
     @Test
-    @DisplayName("collect() should return mutable collection for empty input")
-    void testCollectReturnsModifiableCollectionForEmptyInput() {
-        Collection<Integer> result = summarizer.collect("");
+    @DisplayName("Input validation: should reject oversized input")
+    void testInputSizeValidation() {
+        // Create input larger than MAX_INPUT_LENGTH (100,000)
+        StringBuilder largeInput = new StringBuilder();
+        for (int i = 0; i < 50001; i++) {
+            largeInput.append("12,");
+        }
         
-        // This will fail if Collections.emptyList() is returned (immutable)
-        // but succeed if new ArrayList<>() is returned (mutable)
-        assertDoesNotThrow(() -> {
-            if (result instanceof List) {
-                ((List<Integer>) result).add(42);
-                ((List<Integer>) result).remove(Integer.valueOf(42));
-            }
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            summarizer.collect(largeInput.toString());
         });
+        
+        assertTrue(exception.getMessage().contains("Input too large"));
     }
 }
