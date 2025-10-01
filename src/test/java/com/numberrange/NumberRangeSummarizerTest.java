@@ -391,4 +391,19 @@ class NumberRangeSummarizerTest {
         String result = summarizer.summarizeCollection(numbers);
         assertEquals("1-3", result);
     }
+    
+    @Test
+    @DisplayName("collect() should return mutable collection for empty input")
+    void testCollectReturnsModifiableCollectionForEmptyInput() {
+        Collection<Integer> result = summarizer.collect("");
+        
+        // This will fail if Collections.emptyList() is returned (immutable)
+        // but succeed if new ArrayList<>() is returned (mutable)
+        assertDoesNotThrow(() -> {
+            if (result instanceof List) {
+                ((List<Integer>) result).add(42);
+                ((List<Integer>) result).remove(Integer.valueOf(42));
+            }
+        });
+    }
 }
