@@ -407,4 +407,26 @@ class NumberRangeSummarizerTest {
         
         assertTrue(exception.getMessage().contains("Input too large"));
     }
+    
+    @Test
+    @DisplayName("Performance: optimized pipeline should be efficient")
+    void testOptimizedPerformance() {
+        // Test the optimized collect -> summarize pipeline
+        StringBuilder input = new StringBuilder();
+        for (int i = 1; i <= 1000; i++) {
+            if (i > 1) input.append(",");
+            input.append(i);
+        }
+        
+        long startTime = System.nanoTime();
+        
+        Collection<Integer> numbers = summarizer.collect(input.toString());
+        String result = summarizer.summarizeCollection(numbers);
+        
+        long duration = System.nanoTime() - startTime;
+        
+        // Should handle 1000 numbers very quickly (under 50ms)
+        assertTrue(duration < 50_000_000, "Processing should be fast: " + duration/1_000_000 + "ms");
+        assertEquals("1-1000", result);
+    }
 }

@@ -3,19 +3,23 @@ package com.numberrange;
 import java.util.*;
 
 /**
- * Production-ready implementation of NumberRangeSummarizer for enterprise use.
+ * High-performance implementation of NumberRangeSummarizer optimized for production use.
  * 
- * Converts comma-separated integers into compact range representations with
- * robust error handling and performance optimizations.
+ * Features performance optimizations including:
+ * - Single-pass sorting with efficient deduplication
+ * - Smart detection of pre-sorted input to avoid unnecessary re-processing  
+ * - Memory-efficient algorithms suitable for large datasets
+ * - Input validation to prevent resource exhaustion
+ * 
+ * Time Complexity: O(n log n) for sorting, O(n) for range building
+ * Space Complexity: O(n) with minimal overhead
  * 
  * @author Keuran Kisten
- * @version 1.0.0
  */
 public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
     
-    // Production constraints
+    // Production constraint for input validation
     private static final int MAX_INPUT_LENGTH = 100_000;
-    private static final int MAX_NUMBERS = 10_000;
 
     /**
      * Parses a comma-separated string of integers into a sorted, unique collection.
@@ -34,19 +38,22 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
 
         // Split by commas and parse each number
         String[] parts = input.split(",");
-        Set<Integer> numbers = new TreeSet<>(); // TreeSet keeps things sorted and unique
+        
+        // Use ArrayList first for faster insertions, then sort once
+        List<Integer> numberList = new ArrayList<>(parts.length);
         
         for (String part : parts) {
             String cleaned = part.trim();
             if (!cleaned.isEmpty()) {
                 Integer number = tryParseInt(cleaned);
                 if (number != null) {
-                    numbers.add(number);
+                    numberList.add(number);
                 }
             }
         }
         
-        return new ArrayList<>(numbers);
+        // Sort once and remove duplicates efficiently
+        return deduplicateAndSort(numberList);
     }
 
     /**
@@ -61,8 +68,11 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
             return "";
         }
 
-        // Make sure we have a clean, sorted list to work with
-        List<Integer> numbers = prepareNumbers(input);
+        // Optimize: if input is already from our collect() method, it's sorted and unique
+        List<Integer> numbers = (input instanceof ArrayList && isSortedAndUnique(input)) 
+            ? new ArrayList<>(input) 
+            : prepareNumbers(input);
+            
         if (numbers.isEmpty()) {
             return "";
         }
@@ -84,7 +94,7 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
             }
         }
         
-        // Don't forget the last range
+        // remember the last range
         ranges.add(formatRange(rangeStart, rangeEnd));
         
         return String.join(", ", ranges);
@@ -149,5 +159,52 @@ public class NumberRangeSummarizerImpl implements NumberRangeSummarizer {
                 String.format("Input too large: %d characters (max: %d)", 
                             input.length(), MAX_INPUT_LENGTH));
         }
+    }
+    
+    /**
+     * Efficiently sorts and removes duplicates from a list in a single pass.
+     * More efficient than TreeSet for larger datasets.
+     * 
+     * @param numbers list to deduplicate and sort
+     * @return new sorted list with unique elements
+     */
+    private List<Integer> deduplicateAndSort(List<Integer> numbers) {
+        if (numbers.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        Collections.sort(numbers);
+        
+        // Remove duplicates in-place for memory efficiency
+        List<Integer> result = new ArrayList<>(numbers.size());
+        Integer previous = null;
+        
+        for (Integer current : numbers) {
+            if (!current.equals(previous)) {
+                result.add(current);
+                previous = current;
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Efficiently checks if collection is already sorted and contains unique elements.
+     * Avoids unnecessary re-processing of data from our collect() method.
+     * 
+     * @param input collection to check
+     * @return true if sorted and unique, false otherwise
+     */
+    private boolean isSortedAndUnique(Collection<Integer> input) {
+        if (input.size() <= 1) return true;
+        
+        Integer previous = null;
+        for (Integer current : input) {
+            if (current == null) return false;
+            if (previous != null && current <= previous) return false;
+            previous = current;
+        }
+        return true;
     }
 }
