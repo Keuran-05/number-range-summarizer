@@ -1,0 +1,52 @@
+# This is the name that shows up in GitHub's Actions tab
+name: Build and Test
+
+# When should this workflow run?
+on:
+  push:
+    branches: [ main ]  # Run when pushing to main branch
+  pull_request:
+    branches: [ main ]  # Run when someone creates a PR to main
+
+# What should happen?
+jobs:
+  test:
+    # Use Ubuntu (Linux) virtual machine - it's fast and free
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: 8
+    
+    steps:
+    # Step 1: Get the code from your repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # Step 2: Install Java
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'  # This is Eclipse Temurin (good, free JDK)
+    
+    # Step 3: Speed things up by caching Maven dependencies
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    # Step 4: Run all tests
+    - name: Run tests
+      run: mvn clean test
+    
+    # Step 5: Generate coverage report (only for Java 8 to avoid duplication)
+    - name: Generate coverage report
+      run: mvn jacoco:report
+      if: matrix.java-version == '8'
+    
+    # Step 6: Build the JAR file to make sure everything compiles
+    - name: Build JAR
+      run: mvn clean package -DskipTests

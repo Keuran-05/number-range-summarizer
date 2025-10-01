@@ -10,7 +10,7 @@ import java.util.Scanner;
  * Interactive demo application for the NumberRangeSummarizer.
  * Shows various examples and allows user input testing.
  * 
- * @author Keuran Kisten
+ * @author Keuran Kiste
  */
 public class NumberRangeSummarizerDemo {
     
@@ -117,7 +117,7 @@ public class NumberRangeSummarizerDemo {
                 String result = summarizer.summarizeCollection(numbers);
                 System.out.println("   📄 Final result: \"" + result + "\"");
                 
-                // Show some stats
+                // Show stats
                 if (!numbers.isEmpty()) {
                     System.out.println("   📊 Stats: " + numbers.size() + " unique numbers processed");
                 }
